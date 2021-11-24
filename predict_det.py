@@ -196,18 +196,16 @@ class TextDetector(object):
         return dt_boxes, elapse
 
 
-if __name__ == "__main__":
+def detect(dataset):
     args = utility.parse_args()
 
     from config import det_model_dir, out_rot_img_dir, out_det_txt_dir, out_det_img_dir
 
-    args.image_dir = out_rot_img_dir
+    args.image_dir = out_rot_img_dir(dataset)
     args.det_model_dir = det_model_dir
     args.use_gpu = False
 
-    print(args)
     image_file_list = get_image_file_list(args.image_dir)
-    # image_file_list = '/home/minhhai/Masvision/MC_OCR/20210402_164234799594.jpg'
     text_detector = TextDetector(args)
     count = 0
     total_time = 0
@@ -224,11 +222,15 @@ if __name__ == "__main__":
         count += 1
         logging.info("{} Predict time of {}: {}".format(count, image_file, elapse))
         img_name_pure = os.path.split(image_file)[-1]
-        output_txt_path = os.path.join(out_det_txt_dir, img_name_pure.replace('.jpg', '.txt'))
+        output_txt_path = os.path.join(out_det_txt_dir(dataset), img_name_pure.replace('.jpg', '.txt'))
         src_im = utility.draw_text_det_res(dt_boxes, image_file, save_path=output_txt_path)
 
-        img_path = os.path.join(out_det_img_dir, "{}".format(img_name_pure))
+        img_path = os.path.join(out_det_img_dir(dataset), "{}".format(img_name_pure))
         cv2.imwrite(img_path, src_im)
         logging.info("The visualized image saved in {}\n".format(img_path))
     if count > 1:
         logging.info("Avg Time: {}".format(total_time / (count - 1)))
+
+if __name__ == '__main__':
+    dataset = 'test'
+    detect(dataset)
