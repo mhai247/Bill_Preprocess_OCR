@@ -13,28 +13,28 @@ To this
 
 Clone this repo
 
-'''
+```
 git clone https://github.com/mhai247/Bill_Preprocess_OCR
 cd Bill_Preprocess_OCR
-'''
+```
 Install require package
 
-'''
+```
 pip install -r requirement.txt
-'''
+```
 
 Test the avaiable dataset
 
-'''
+```
 python3 scan.py
-'''
+```
 
 Copy your dataset into data folder
 Run in your dataset
 
-'''
+```
 python3 scan.py --image_dir YOUR_DATASET_NAME
-'''
+```
 
 Opensource code
 [pyimagesearch](https://www.pyimagesearch.com/2014/08/25/4-point-opencv-getperspective-transform-example/)
