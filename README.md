@@ -1,6 +1,6 @@
-# Bill Preprocess for Better OCR
-## Problem
-I'm doing a OCR model in Bill information extracting. But not always our data is good enough. This repo is to make the image ready for classification phase.
+# Text Image Scan
+## Introduciton
+This repo is to scan and align a text image file using text detection.
 From this
 ![Input image](data/test/z2848586099063_d70389229cda6d2be64064040265291a.jpg "Input image")
 To this
@@ -14,7 +14,7 @@ To this
 Clone this repo
 
 ```
-git clone https://github.com/mhai247/Bill_Preprocess_OCR
+git clone https://github.com/mhai247/Text_Image_Scan
 cd Bill_Preprocess_OCR
 ```
 Install require package
