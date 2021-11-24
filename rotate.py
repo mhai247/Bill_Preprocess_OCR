@@ -1,4 +1,3 @@
-from numpy.core.fromnumeric import amax
 from pyimagesearch import imutils
 from scipy.spatial import distance as dist
 import numpy as np
