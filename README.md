@@ -2,8 +2,8 @@
 ## Introduciton
 This repo is to scan and align a text image file using text detection.
 Like this
-![Input image](data/test/z2848586099063_d70389229cda6d2be64064040265291a.jpg "Input image" width="400" height="790")
-![Output image](output/map/test/img/z2848586099063_d70389229cda6d2be64064040265291a.jpg "Output image" width="400" height="790")
+![Input image](data/test/z2848586099063_d70389229cda6d2be64064040265291a.jpg "Input image")
+![Output image](output/map/test/img/z2848586099063_d70389229cda6d2be64064040265291a.jpg "Output image")
 ## Pipeline
 1. Image rotation using OpenCV
 1. Text detection using Paddle OCR
