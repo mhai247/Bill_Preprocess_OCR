@@ -44,7 +44,7 @@ def parse_args():
 
     # DB parmas
     parser.add_argument("--det_db_thresh", type=float, default=0.3)
-    parser.add_argument("--det_db_box_thresh", type=float, default=0.3)
+    parser.add_argument("--det_db_box_thresh", type=float, default=0.2)
     parser.add_argument("--det_db_unclip_ratio", type=float, default=1.6)
     parser.add_argument("--max_batch_size", type=int, default=10)
     # EAST parmas
