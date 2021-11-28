@@ -25,8 +25,11 @@ def trim(img, origin_img):
 
     horizon_dim = np.amin(img, axis=0)
     text_appear = np.where(horizon_dim == 0)
-    horizon_min = max(0, np.min(text_appear)-1)
-    horizon_max = min(w, np.max(text_appear)+1)
+    horizon_min = 0
+    horizon_max = w-1
+    if len(text_appear) > 10:
+        horizon_min = max(0, np.min(text_appear)-1)
+        horizon_max = min(w, np.max(text_appear)+1)
 
     blank = np.where(horizon_dim[:horizon_max] != 0)
     i = 0
@@ -48,8 +51,9 @@ def trim(img, origin_img):
 
 
 def map(dataset):
-    files = glob.glob(out_rot_img_dir(dataset) + '/*.jpg')
+    files = glob.glob(out_rot_img_dir(dataset=dataset) + '/*.jpg')
     for file in reversed(files):
+        print(file)
         img_file_name = file.split('/')[-1]
         txt_file_name = img_file_name.replace('.jpg', '.txt')
         
@@ -65,7 +69,7 @@ def map(dataset):
         height, width = img.shape[:2]
         blank_image = np.ones((height,width, 3), np.uint8) * 255
 
-        MAX_DIS = height/60
+        MAX_DIS = height/70
 
         new_box = np.zeros((4,2), dtype=np.int16)
         boxes = np.zeros((100,4,2), dtype=np.int16)
@@ -167,6 +171,7 @@ def map(dataset):
 
             # print((top, tl[0]), (top+h, tl[0]+w))
             # blank_image = cv2.rectangle(blank_image, (tl[0], top), (tl[0]+w, top+h), color=(0,0,0), thickness=2)
+
             if side == 1:
                 blank_image[top+dilate:top+h-dilate, tl[0]+dilate:tl[0]+w- dilate, :] = thresh[dilate:h-dilate, dilate:w-dilate, :]
                 boxes[i] = np.array([[top, tl[0]], [top, tl[0] + w], [top + h, tl[0] + w], [top + h, tl[0]]])
@@ -174,10 +179,11 @@ def map(dataset):
                 blank_image[top+dilate:top+h-dilate, tr[0]-w+dilate:tr[0]- dilate, :] = thresh[dilate:h-dilate, dilate:w-dilate, :]
                 boxes[i] = np.array([[top, tr[0] - w], [top, tr[0]], [top + h, tr[0]], [top + h, tr[0] - w]])
 
-            # cv2.namedWindow('output', cv2.WINDOW_NORMAL)
-            # cv2.imshow('output', blank_image)
-            # cv2.waitKey(0)
-            # cv2.destroyAllWindows()
+            if file == '/home/minhhai/GitRepo/Text_Scan/output/rotate/20211015/z2848588414354_3fe6c4b16b8c023ca0f2a0a44b96290a.jpg':
+                cv2.namedWindow('output', cv2.WINDOW_NORMAL)
+                cv2.imshow('output', blank_image)
+                cv2.waitKey(0)
+                cv2.destroyAllWindows()
 
         end = time.time()
 
@@ -194,5 +200,5 @@ def map(dataset):
 
 
 if __name__ == '__main__':
-    dataset = 'test'
+    dataset = '20211015'
     map(dataset)
