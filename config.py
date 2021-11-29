@@ -57,3 +57,7 @@ def out_map_txt_dir(dataset='test'):
 def out_map_img_dir(dataset='test'):
     out_map_img_dir = output_dir(dataset, 'map', type='img')
     return out_map_img_dir
+
+def out_map_img_rgb_dir(dataset='test'):
+    out_map_img_rgb_dir = output_dir(dataset, 'map', type='img_rgb')
+    return out_map_img_rgb_dir

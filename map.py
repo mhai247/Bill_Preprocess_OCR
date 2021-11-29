@@ -8,7 +8,6 @@ import time
 import os
 
 def overlap(box1, box2):
-    # print(box1, box2)
     if max(box1[:, 1]) - min(box2[:, 1]) <= 15:
         return 0
     if min(box1[:, 1]) - max(box2[:, 1]) >= -15:
@@ -25,20 +24,19 @@ def trim(img, origin_img):
 
     horizon_dim = np.amin(img, axis=0)
     text_appear = np.where(horizon_dim == 0)
-    # print(text_appear)
+
+    horizon_min = 0
+    horizon_max = w
 
     if len(text_appear[0]) == 0:
         return img[0:h, 0:w],0
-    horizon_min = 0
-    horizon_max = w
-    if len(text_appear[0]) > 5:
+
+    elif len(text_appear[0]) > 5:
         horizon_min = max(0, np.min(text_appear)-1)
         horizon_max = min(w, np.max(text_appear)+1)
 
     blank = np.where(horizon_dim[:horizon_max] != 0)
     i = 0
-    # print(h,w)
-    # print(blank[0][horizon_min:])
     if len(blank[0]) >= 15:
         last = np.max(blank[0])
         for i in range(len(blank[0])):
@@ -50,7 +48,6 @@ def trim(img, origin_img):
 
     if len(blank[0][horizon_min:]) >= 15:
         first = np.min(blank[0][horizon_min:])
-        # print(first)
         for j in range(len(blank[0][horizon_min:])):
             if blank[0][j] != first + j:
                 break

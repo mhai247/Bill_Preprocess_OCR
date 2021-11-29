@@ -13,9 +13,9 @@ def rotate(dataset):
     files = glob.glob(in_img_dir(dataset)+'/*.jpg')
 
     for file in files:
-        start = time.time()
         img_name = file.split('/')[-1]
         img = cv2.imread(file)
+        start = time.time()
         height, width = img.shape[:2]
 
         crop_height = int(height/6)
@@ -34,7 +34,6 @@ def rotate(dataset):
 
         lines = lsd(edged)
 
-        corners = []
         if lines is not None:
             lines = lines.squeeze().astype(np.int32).tolist()
 
@@ -49,7 +48,7 @@ def rotate(dataset):
         # new_height, new_width = edged.shape
         # blank_image = np.zeros((new_height, new_width, 3), dtype=np.uint8)
 
-        contours = sorted(contours, key=lambda c: cv2.arcLength(c, True), reverse=True)[:2]
+        contours = sorted(contours, key=lambda c: cv2.arcLength(c, True), reverse=True)[:1]
         #take longest contour
         contour = contours[0].reshape(contours[0].shape[0], contours[0].shape[2])
 
@@ -60,6 +59,9 @@ def rotate(dataset):
 
         sin = (left_y - right_y)/dist.euclidean((min_x, left_y), (max_x, right_y))
         angle = -np.arcsin(sin) * 180 / np.pi
+
+        if abs(angle) > 25:
+            continue
 
         rotated = imutils.rotate(img, angle)
         # cv2.namedWindow('output', cv2.WINDOW_NORMAL)
