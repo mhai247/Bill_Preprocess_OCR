@@ -33,8 +33,9 @@ def order_points(pts):
 def four_point_transform(image, pts):
     # obtain a consistent order of the points and unpack them
     # individually
-    rect = order_points(pts)
-    (tl, tr, br, bl) = rect
+    # rect = order_points(pts)
+    (tl, tr, br, bl) = pts
+    rect = np.array([tl, tr, br, bl], dtype = "float32")
 
     # compute the width of the new image, which will be the
     # maximum distance between bottom-right and bottom-left

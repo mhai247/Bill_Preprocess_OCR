@@ -9,9 +9,9 @@ import os
 
 def overlap(box1, box2):
     # print(box1, box2)
-    if max(box1[:, 1]) <= min(box2[:, 1]):
+    if max(box1[:, 1]) - min(box2[:, 1]) <= 15:
         return 0
-    if min(box1[:, 1]) >= max(box2[:, 1]):
+    if min(box1[:, 1]) - max(box2[:, 1]) >= -15:
         return 0
     if max(box1[:, 0]) <= min(box2[:, 0]):
         return 0
@@ -25,35 +25,51 @@ def trim(img, origin_img):
 
     horizon_dim = np.amin(img, axis=0)
     text_appear = np.where(horizon_dim == 0)
+    # print(text_appear)
+
+    if len(text_appear[0]) == 0:
+        return img[0:h, 0:w],0
     horizon_min = 0
-    horizon_max = w-1
-    if len(text_appear) > 10:
+    horizon_max = w
+    if len(text_appear[0]) > 5:
         horizon_min = max(0, np.min(text_appear)-1)
         horizon_max = min(w, np.max(text_appear)+1)
 
     blank = np.where(horizon_dim[:horizon_max] != 0)
     i = 0
+    # print(h,w)
+    # print(blank[0][horizon_min:])
     if len(blank[0]) >= 15:
         last = np.max(blank[0])
-        for i in range(last):
+        for i in range(len(blank[0])):
             if blank[0][-i-1] != last - i:
                 break
         
         if i > 15:
             horizon_max -= i
 
+    if len(blank[0][horizon_min:]) >= 15:
+        first = np.min(blank[0][horizon_min:])
+        # print(first)
+        for j in range(len(blank[0][horizon_min:])):
+            if blank[0][j] != first + j:
+                break
+        
+        if j > 15:
+            horizon_min += j - 1
+
     vertical_dim = np.amin(img, axis=1)
     text_appear = np.where(vertical_dim == 0)
     vertical_min = max(0, np.min(text_appear)-1)
     vertical_max = min(h, np.max(text_appear)+1)
 
-    return origin_img[vertical_min:vertical_max, horizon_min:horizon_max],i
+    return img[vertical_min:vertical_max, horizon_min:horizon_max],i
 
 
 def map(dataset):
     files = glob.glob(out_rot_img_dir(dataset=dataset) + '/*.jpg')
     for file in reversed(files):
-        print(file)
+        # print(file)
         img_file_name = file.split('/')[-1]
         txt_file_name = img_file_name.replace('.jpg', '.txt')
         
@@ -67,9 +83,9 @@ def map(dataset):
         start = time.time()
 
         height, width = img.shape[:2]
-        blank_image = np.ones((height,width, 3), np.uint8) * 255
+        blank_image = np.ones((height,width), np.uint8) * 255
 
-        MAX_DIS = height/70
+        MAX_DIS = height/80
 
         new_box = np.zeros((4,2), dtype=np.int16)
         boxes = np.zeros((100,4,2), dtype=np.int16)
@@ -89,7 +105,10 @@ def map(dataset):
 
             pts = np.reshape(pts, (4,2))
             warp = transform.four_point_transform(img, pts)
-            
+            # print(pts)
+            # cv2.imshow('sharpen', warp)
+            # cv2.waitKey(0)
+            # cv2.destroyAllWindows()
             h,w = warp.shape[:2]
 
             gray = cv2.cvtColor(warp, cv2.COLOR_BGR2GRAY)
@@ -101,20 +120,23 @@ def map(dataset):
             # # apply adaptive threshold to get black and white effect
             thresh = cv2.adaptiveThreshold(sharpen, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 17, 9)
 
-            # if i == 16:
-            #     cv2.imshow('sharpen', thresh)
-            #     cv2.waitKey(0)
-            #     cv2.destroyAllWindows()
+
+            tl = pts[0]
+            tr = pts[1]
+            # print(tl,tr, height,width)
+            if tl[1] + h >= height:
+                continue
+            if tr[0] - w < 0:
+                continue
 
             thresh, dis = trim(thresh, warp)
             h,w = thresh.shape[:2]
 
-            # cv2.imshow('sharpen', cv2.resize(thresh, (w*5,h*5)))
+            
+            # cv2.imshow('sharpen', cv2.resize(thresh, (w,h)))
             # cv2.waitKey(0)
             # cv2.destroyAllWindows()
 
-            tl = pts[0]
-            tr = pts[1]
             # print(tl, tr, width, height)
 
             # 0 for left side, 1 for right
@@ -160,30 +182,34 @@ def map(dataset):
             top = max_h
 
 
-            if side == 1 and tl[0] + w >= width:
+            if side == 0 and tl[0] + w >= width:
                 # out = tl[0] + h - width + 1
-                tl[0] = width - h - 1
+                tl[0] = width - w - 1
             # print(blank_image.shape)
 
-            if top + h >= height:
-                continue
+
             dilate = 0
 
             # print((top, tl[0]), (top+h, tl[0]+w))
-            # blank_image = cv2.rectangle(blank_image, (tl[0], top), (tl[0]+w, top+h), color=(0,0,0), thickness=2)
 
+
+            if side == 0 and tr[0] < w:
+                tr[0] = w
             if side == 1:
-                blank_image[top+dilate:top+h-dilate, tl[0]+dilate:tl[0]+w- dilate, :] = thresh[dilate:h-dilate, dilate:w-dilate, :]
+                blank_image[top+dilate:top+h-dilate, tl[0]+dilate:tl[0]+w- dilate] = thresh[dilate:h-dilate, dilate:w-dilate]
                 boxes[i] = np.array([[top, tl[0]], [top, tl[0] + w], [top + h, tl[0] + w], [top + h, tl[0]]])
             else:
-                blank_image[top+dilate:top+h-dilate, tr[0]-w+dilate:tr[0]- dilate, :] = thresh[dilate:h-dilate, dilate:w-dilate, :]
+                blank_image[top+dilate:top+h-dilate, tr[0]-w+dilate:tr[0]- dilate] = thresh[dilate:h-dilate, dilate:w-dilate]
                 boxes[i] = np.array([[top, tr[0] - w], [top, tr[0]], [top + h, tr[0]], [top + h, tr[0] - w]])
+            # blank_image = cv2.rectangle(blank_image, (boxes[i][0][1], boxes[i][0][0]), (boxes[i][2][1], boxes[i][2][0]), color=(0,0,0), thickness=2)
 
-            if file == '/home/minhhai/GitRepo/Text_Scan/output/rotate/20211015/z2848588414354_3fe6c4b16b8c023ca0f2a0a44b96290a.jpg':
-                cv2.namedWindow('output', cv2.WINDOW_NORMAL)
-                cv2.imshow('output', blank_image)
-                cv2.waitKey(0)
-                cv2.destroyAllWindows()
+            # if img_file_name == 'z2848587299374_cfdddfeed125784c6eaed83e83ebaaa5.jpg':
+            # cv2.namedWindow('output', cv2.WINDOW_NORMAL)
+            
+            # cv2.imshow('output', blank_image)
+            # cv2.waitKey(0)
+            # cv2.destroyAllWindows()
+            # print(h,w,top, tl[0])
 
         end = time.time()
 
