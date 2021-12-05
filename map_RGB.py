@@ -1,11 +1,17 @@
+from PIL.ImageFont import ImageFont
 import cv2
 import numpy as np
 from numpy.core.fromnumeric import shape
 from pyimagesearch import transform
 import glob
-from config import out_rot_img_dir, out_det_txt_dir, out_map_img_rgb_dir, out_map_txt_dir
+from config import out_rot_img_dir, out_det_txt_dir, out_cls_img_dir, out_cls_txt_dir, ROOT
 import time
 import os
+from PIL import Image, ImageDraw, ImageFont
+import matplotlib.pyplot as plt
+
+from vietocr.tool.predictor import Predictor
+from vietocr.tool.config import Cfg
 
 def overlap(box1, box2):
     if max(box1[:, 1]) - min(box2[:, 1]) <= 15:
@@ -62,8 +68,17 @@ def trim(img, origin_img):
 
     return origin_img[vertical_min:vertical_max, horizon_min:horizon_max, :],i
 
+def predict(img, detector):
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    img = Image.fromarray(img)
+    s = detector.predict(img)
+    return s
 
-def map(dataset):
+    # print(s)
+
+def map_RGB(dataset):
+    config = Cfg.load_config_from_file(os.path.join(ROOT, 'vietocr/config/vgg-seq2seq.yml'))
+    detector = Predictor(config)
     files = glob.glob(out_rot_img_dir(dataset=dataset) + '/*.jpg')
     for file in reversed(files):
         # print(file)
@@ -72,15 +87,19 @@ def map(dataset):
         
         img = cv2.imread(file)
         txt_file_path = os.path.join(out_det_txt_dir(dataset), txt_file_name)
-        out_img_file_path = os.path.join(out_map_img_rgb_dir(dataset), img_file_name)
-        out_txt_file_path = os.path.join(out_map_txt_dir(dataset), txt_file_name)
-
+        out_img_file_path = os.path.join(out_cls_img_dir(dataset), img_file_name)
+        out_txt_file_path = os.path.join(out_cls_txt_dir(dataset), txt_file_name)
+        
+        out_txt_file = open(out_txt_file_path, 'w')
         txt_file = open(txt_file_path, 'r')
 
         start = time.time()
 
         height, width = img.shape[:2]
-        blank_image = np.ones((height,width, 3), np.uint8) * 255
+        blank_image = Image.new ( "RGB", (width,height), (255,255,255) )
+        draw = ImageDraw.Draw(blank_image)
+        font_size = int(height/70)
+        unicode_font = ImageFont.truetype("DejaVuSans.ttf", font_size)
 
         MAX_DIS = height/80
 
@@ -186,11 +205,19 @@ def map(dataset):
                 tr[0] = w
                 
             if side == 1:
-                blank_image[top+dilate:top+h-dilate, tl[0]+dilate:tl[0]+w- dilate, :] = thresh[dilate:h-dilate, dilate:w-dilate, :]
+                # blank_image[top+dilate:top+h-dilate, tl[0]+dilate:tl[0]+w- dilate, :] = thresh[dilate:h-dilate, dilate:w-dilate, :]
                 boxes[i] = np.array([[top, tl[0]], [top, tl[0] + w], [top + h, tl[0] + w], [top + h, tl[0]]])
             else:
-                blank_image[top+dilate:top+h-dilate, tr[0]-w+dilate:tr[0]- dilate, :] = thresh[dilate:h-dilate, dilate:w-dilate, :]
+                # blank_image[top+dilate:top+h-dilate, tr[0]-w+dilate:tr[0]- dilate, :] = thresh[dilate:h-dilate, dilate:w-dilate, :]
                 boxes[i] = np.array([[top, tr[0] - w], [top, tr[0]], [top + h, tr[0]], [top + h, tr[0] - w]])
+            
+            if 0 not in thresh[dilate:h-dilate, dilate:w-dilate, :].shape:
+                # print(thresh[dilate:h-dilate, dilate:w-dilate, :].shape)
+                ocr = predict(thresh[dilate:h-dilate, dilate:w-dilate, :], detector)
+                out_txt_file.write('{},{},{},{},{},{},{},{},{}\n'.format(boxes[i][0][1], boxes[i][0][0], boxes[i][1][1], boxes[i][1][0],
+                                                                boxes[i][2][1], boxes[i][2][0], boxes[i][3][1], boxes[i][3][0], ocr))
+            # blank_image = cv2.putText(blank_image, ocr, (boxes[i][3][1], boxes[i][0][0] - 20), cv2.FONT_HERSHEY_COMPLEX, 1, (255,0,0), 2, cv2.LINE_AA)
+            draw.text((boxes[i][3][1], boxes[i][0][0] - 20), ocr, font=unicode_font, fill=(0,0,0))
             # blank_image = cv2.rectangle(blank_image, (boxes[i][0][1], boxes[i][0][0]), (boxes[i][2][1], boxes[i][2][0]), color=(0,0,0), thickness=2)
 
             # if img_file_name == 'z2848587299374_cfdddfeed125784c6eaed83e83ebaaa5.jpg':
@@ -202,19 +229,22 @@ def map(dataset):
             # print(h,w,top, tl[0])
 
         end = time.time()
-
-        cv2.imwrite(out_img_file_path, blank_image)
+        blank_image.save(out_img_file_path)
+        # cv2.imwrite(out_img_file_path, blank_image)
         # cv2.namedWindow('output', cv2.WINDOW_NORMAL)
         # cv2.imshow('output', cv2.resize(blank_image, ())
         # cv2.waitKey(0)
         # cv2.destroyAllWindows()
-        print("Saved image in {}".format(out_img_file_path))
+        # print("Saved image in {}".format(out_img_file_path))
+        print('FILE: {}'.format(img_file_name))
+        print('Save output to {}'.format(out_img_file_path))
         print("Time: {}\n".format(end-start))
-        boxes = np.flip(boxes, axis=2)
-        boxes = np.reshape(boxes, (100, 8))
-        np.savetxt(out_txt_file_path, boxes[:i+1], '%d', ',', ',\n')
+
+        # boxes = np.flip(boxes, axis=2)
+        # boxes = np.reshape(boxes, (100, 8))
+        # np.savetxt(out_txt_file_path, boxes[:i+1], '%d', ',', ',\n')
 
 
 if __name__ == '__main__':
     dataset = '20211015'
-    map(dataset)
+    map_RGB(dataset)

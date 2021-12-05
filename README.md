@@ -7,6 +7,7 @@ Like this
 1. Image rotation using OpenCV
 1. Text detection using Paddle OCR
 1. Maping detected box in a new image using pyimagesearch
+1. OCR
 ## Use
 
 Clone this repo
@@ -38,3 +39,5 @@ python3 scan.py --image_dir YOUR_DATASET_NAME
 [pyimagesearch](https://www.pyimagesearch.com/2014/08/25/4-point-opencv-getperspective-transform-example/)
 
 [PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR)
+
+[vietocr](https://github.com/pbcquoc/vietocr)

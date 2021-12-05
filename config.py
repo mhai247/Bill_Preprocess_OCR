@@ -61,3 +61,12 @@ def out_map_img_dir(dataset='test'):
 def out_map_img_rgb_dir(dataset='test'):
     out_map_img_rgb_dir = output_dir(dataset, 'map', type='img_rgb')
     return out_map_img_rgb_dir
+
+# classify phase
+def out_cls_txt_dir(dataset='test'):
+    out_cls_txt_dir = output_dir(dataset, 'cls', type='txt')
+    return out_cls_txt_dir
+
+def out_cls_img_dir(dataset='test'):
+    out_cls_img_dir = output_dir(dataset, 'cls', type='jpg')
+    return out_cls_img_dir

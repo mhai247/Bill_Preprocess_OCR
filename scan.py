@@ -3,7 +3,7 @@ import argparse
 from config import *
 from rotate import rotate
 from predict_det import detect
-from map import map
+from map import map, map_RGB
 import time
 
 def parse_args():
@@ -24,7 +24,7 @@ if __name__ == '__main__':
     print('_____________________Detect phase_____________________\n')
     detect(dataset)
     print('_______________________Map phase______________________\n')
-    map(dataset)
+    map_RGB(dataset)
     end = time.time()
 
     print('Total time: {} secs'.format(end - start))
