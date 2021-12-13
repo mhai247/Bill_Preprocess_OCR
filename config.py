@@ -70,3 +70,12 @@ def out_cls_txt_dir(dataset='test'):
 def out_cls_img_dir(dataset='test'):
     out_cls_img_dir = output_dir(dataset, 'cls', type='jpg')
     return out_cls_img_dir
+
+# crop phase
+def out_crop_img_dir(dataset='test'):
+    out_crop_img_dir = output_dir(dataset, 'crop', type='jpg')
+    return out_crop_img_dir
+
+def out_crop_txt_dir(dataset='test'):
+    out_crop_txt_dir = output_dir(dataset, 'crop', type='txt')
+    return out_crop_txt_dir
