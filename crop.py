@@ -21,6 +21,7 @@ def predict(img, detector):
 
 def crop(dataset):
     config = Cfg.load_config_from_file(os.path.join(ROOT, 'vietocr/config/vgg-seq2seq.yml'))
+    config['device'] = 'cpu'
     detector = Predictor(config)
     files = glob.glob(out_rot_img_dir(dataset=dataset) + '/*.jpg')
     for file in files:

@@ -79,3 +79,11 @@ def out_crop_img_dir(dataset='test'):
 def out_crop_txt_dir(dataset='test'):
     out_crop_txt_dir = output_dir(dataset, 'crop', type='txt')
     return out_crop_txt_dir
+
+def out_rule_img_dir(dataset='test'):
+    out_rule_img_dir = output_dir(dataset, 'rule', type='jpg')
+    return out_rule_img_dir
+
+def out_rule_txt_dir(dataset='rule'):
+    out_rule_txt_dir = output_dir(dataset, 'rule', type='txt')
+    return out_rule_txt_dir
