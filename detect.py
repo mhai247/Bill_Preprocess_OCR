@@ -230,7 +230,3 @@ def detect(dataset):
         logging.info("The visualized image saved in {}\n".format(img_path))
     if count > 1:
         logging.info("Avg Time: {}".format(total_time / (count - 1)))
-
-if __name__ == '__main__':
-    dataset = 'test'
-    detect(dataset)
