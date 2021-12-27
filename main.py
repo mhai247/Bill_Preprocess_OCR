@@ -6,9 +6,10 @@ from vietocr.tool.config import Cfg
 import cv2
 import glob
 import os
+import time
 
 from process import Rule
-from config import in_img_dir, out_rule_txt_dir
+from config import in_img_dir, out_rule_txt_dir, out_rule_img_dir
 
 if __name__ == '__main__':
     args = parse_args()
@@ -18,20 +19,24 @@ if __name__ == '__main__':
     # config['cnn']['pretrained'] = False
     # config['predictor']['beamsearch'] = False
     classifier = Predictor(config)
-    rule = Rule(args, detector, classifier)
+    rule = Rule(detector, classifier)
 
     dataset = args.dataset
     image_dir = in_img_dir(dataset)
-    out_dir = out_rule_txt_dir(dataset)
+    out_txt_dir = out_rule_txt_dir(dataset)
+    out_img_dir = out_rule_img_dir(dataset)
 
     files = glob.glob(image_dir + '/*.jpg')
 
-    for file in files:
+    for file in reversed(files):
         file_name = file.split('/')[-1]
         img = cv2.imread(file)
-        name_usage, chandoan = rule(img)
-        out_file = os.path.join(out_dir, file_name.replace('.jpg', '.txt'))
-        fstream = open(out_file, 'w')
+        start = time.time()
+        name_usage, chandoan, vsl_img = rule.case1(img)
+        end = time.time()
+        out_txt_file = os.path.join(out_txt_dir, file_name.replace('.jpg', '.txt'))
+        out_img_file = os.path.join(out_img_dir, file_name)
+        fstream = open(out_txt_file, 'w')
 
         fstream.write(chandoan + '\n')
         
@@ -39,5 +44,12 @@ if __name__ == '__main__':
             fstream.write("\n\n" + name + "\n" + usage)
         
         fstream.close()
+
+        print('File: ' + file)
+        print('Output saved to: ' + out_txt_file)
+        if args.visualise:
+            cv2.imwrite(out_img_file, vsl_img)
+            print('Visualised image saved in: ' + out_img_file)
+        print('Time: {}\n'.format(end - start))
 
 

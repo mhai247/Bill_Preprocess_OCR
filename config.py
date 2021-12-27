@@ -21,10 +21,14 @@ def output_dir(dataset, phase, type=None):
     return dir
 
 # input_data_dir
-def in_img_dir(dataset='test'):
+def in_img_dir(dataset):
     dir = os.path.join(DATA_ROOT, dataset)
     return dir
 
-def out_rule_txt_dir(dataset='rule'):
+def out_rule_txt_dir(dataset):
     out_rule_txt_dir = output_dir(dataset, 'rule', type='txt')
     return out_rule_txt_dir
+
+def out_rule_img_dir(dataset):
+    out_rule_img_dir = output_dir(dataset, 'rule', type='img')
+    return out_rule_img_dir

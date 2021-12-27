@@ -8,6 +8,7 @@ def parse_args():
 
     parser = argparse.ArgumentParser()
     # params for prediction engine
+    parser.add_argument("--visualise", type=str2bool, default=False)
     parser.add_argument("--use_gpu", type=str2bool, default=True)
     parser.add_argument("--ir_optim", type=str2bool, default=True)
     parser.add_argument("--use_tensorrt", type=str2bool, default=False)

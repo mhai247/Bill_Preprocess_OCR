@@ -7,7 +7,7 @@ from PIL import Image
 from pyimagesearch import imutils, transform
 
 class Rule():
-    def __init__(self, args, detector, classifier):
+    def __init__(self, detector, classifier):
         super().__init__()
         self.detector = detector
         self.classifier = classifier
@@ -21,19 +21,19 @@ class Rule():
 
         crop = img[crop_height:height - crop_height, crop_width:width - crop_width]
 
-        gray = cv2.cvtColor(crop, cv2.COLOR_RGB2GRAY)
+        crop = cv2.cvtColor(crop, cv2.COLOR_RGB2GRAY)
 
-        thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 21, 15)
+        crop = cv2.adaptiveThreshold(crop, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 21, 15)
 
         kernel = cv2.getStructuringElement(cv2.MORPH_CROSS,(50,9))
-        dilated = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel)
+        crop = cv2.morphologyEx(crop, cv2.MORPH_OPEN, kernel)
 
-        edged = cv2.Canny(dilated, 0, 100)
+        edged = cv2.Canny(crop, 0, 100)
 
         lines = lsd(edged)
 
         if lines is not None:
-            lines = lines.squeeze().astype(np.int32).tolist()
+            lines = lines.squeeze().astype(np.int16).tolist()
 
             horizontal_lines_canvas = np.zeros(edged.shape, dtype=np.uint8)
             for line in lines:
@@ -42,7 +42,7 @@ class Rule():
                     (x1, y1), (x2, y2) = sorted(((x1, y1), (x2, y2)), key=lambda pt: pt[0])
                     cv2.line(horizontal_lines_canvas, (max(x1 - 5, 0), y1), (min(x2 + 5, img.shape[1] - 1), y2), 255, 2)
 
-        (contours, hierarchy) = cv2.findContours(horizontal_lines_canvas, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
+        (contours, _) = cv2.findContours(horizontal_lines_canvas, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
 
         contours = sorted(contours, key=lambda c: cv2.arcLength(c, True), reverse=True)[:1]
 
@@ -82,7 +82,7 @@ class Rule():
         lines = lsd(edged)
 
         if lines is not None:
-            lines = lines.squeeze().astype(np.int32).tolist()
+            lines = lines.squeeze().astype(np.int16).tolist()
 
             chosen = []
             for line in lines:
@@ -126,6 +126,11 @@ class Rule():
         s = self.classifier.predict(im_pil)
         return s
 
+    def draw_box(self, img, pts, color):
+        for i in range(4):
+            cv2.line(img, tuple(pts[i-1]), tuple(pts[i]), color, thickness=3)
+        return
+
     def case1(self, img):
         img = self.rotate(img)
         height, width = img.shape[:2]
@@ -138,7 +143,7 @@ class Rule():
         inside_table = []
         dt_boxes, _ = self.detector(img)
         for pts in dt_boxes:
-            pts = pts.astype(np.int32)
+            pts = pts.astype(np.int16)
             dist = np.linalg.norm(pts[0] - pts[2])
             if dist > width//25 and pts[0,1] > h_min and pts[0,1] < h_max:
                 inside_table.append(pts)
@@ -147,10 +152,10 @@ class Rule():
             elif pts[0,1] < h_val[-1] - height//100:
                 upper.append(pts)
         
-        Name_Usage = []
+        name_usage = []
         for pts in inside_table:
             if abs(inside_table[max_width][0][0] - pts[0][0]) < width//50:
-                Name_Usage.append(pts)
+                name_usage.append(pts)
         
         line_idx = 1
         count = 0
@@ -158,10 +163,12 @@ class Rule():
         usage = ''
         mapping = {}
 
-        for i in range(len(Name_Usage)):
-            warp = transform.four_point_transform(img, Name_Usage[i])
+        color_dict = {'name': (255, 0, 0), 'usage': (0, 255, 0), 'diagnosis': (0, 0, 255)}
+        for i in range(len(name_usage)):
+            warp = transform.four_point_transform(img, name_usage[i])
             ocr = self.predict(warp)
-            if i == len(Name_Usage) - 1 or Name_Usage[i+1][0][1] < h_val[line_idx] - height//100:
+            if i == len(name_usage) - 1 or name_usage[i+1][0][1] < h_val[line_idx] - height//100:
+                self.draw_box(img, name_usage[i], color_dict['name'])
                 name = ocr + name
                 mapping[name] = usage
                 name = ''
@@ -171,15 +178,18 @@ class Rule():
                 if count == 0:
                     usage = ocr
                     count = 1
+                    self.draw_box(img, name_usage[i], color_dict['usage'])
                 else:
+                    self.draw_box(img, name_usage[i], color_dict['name'])
                     name = ocr + name
         phong_kham = upper[0][0][0]
         chandoan = ''     
         for i in range (1, len(upper)):
             warp = transform.four_point_transform(img, upper[i])
             ocr = self.predict(warp)
+            self.draw_box(img, upper[i], color_dict['diagnosis'])
             chandoan = ocr + ' ' + chandoan
             if upper[i][0][0] - phong_kham < width//70:
                 break
-        return mapping, chandoan
+        return mapping, chandoan, img
 
