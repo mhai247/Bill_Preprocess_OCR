@@ -130,48 +130,92 @@ class Rule():
         for i in range(4):
             cv2.line(img, tuple(pts[i-1]), tuple(pts[i]), color, thickness=3)
         return
+    def box_val(self, pts):
+        x_min = np.min(pts, axis=0)
+        x_max = np.max(pts, axis=0)
+        y_min = np.min(pts, axis=1)
+        y_max = np.max(pts, axis=1)
+        return x_min, y_min, x_max, y_max
 
     def case1(self, img):
+        color_dict = {'drug_name': (255, 0, 0), 'usage': (0, 255, 0), 'diagnosis': (0, 0, 255), 'type': (255,255,0), 'quantity': (0,255,255), 'date': (255,0,255)}
         img = self.rotate(img)
         height, width = img.shape[:2]
         h_val = self.check_line(img)
         h_min = h_val[-2]- width//50
         h_max = h_val[0] - width//100
 
-        max_width = 0
         upper = []
+        lower = []
         inside_table = []
         dt_boxes, _ = self.detector(img)
+        i = 0
+        date_done = 0
         for pts in dt_boxes:
             pts = pts.astype(np.int16)
             dist = np.linalg.norm(pts[0] - pts[2])
-            if dist > width//25 and pts[0,1] > h_min and pts[0,1] < h_max:
+            if dist > width//30 and pts[0,1] > h_min and pts[0,1] < h_max:
+                if date_done == 0:
+                    date_box = dt_boxes[i-3]
+                    date_done = 1
                 inside_table.append(pts)
-                if pts[2][0] - pts[0][0] > inside_table[max_width][2][0] - inside_table[max_width][0][0]:
-                    max_width = len(inside_table) - 1
             elif pts[0,1] < h_val[-1] - height//100:
                 upper.append(pts)
+            elif pts[0,1] > h_max:
+                lower.append(pts)
+            if date_done == 0:
+                i += 1
+        
+        self.draw_box(img, date_box, color_dict['date'])
         
         name_usage = []
+        type = []
+        quantity = []
+        type_start = 0
+        max_width = 0
+        
+
+        inside_table = sorted(inside_table, key=lambda c: c[0,0])
+        # print(inside_table)
+        for i in range(1, len(inside_table)):
+            if inside_table[i][2][0] - inside_table[i][0][0] > inside_table[max_width][2][0] - inside_table[max_width][0][0]:
+                max_width = i
+
+
         for pts in inside_table:
+            if inside_table[max_width][0][0] - pts[0][0] > width//50:
+                continue
             if abs(inside_table[max_width][0][0] - pts[0][0]) < width//50:
                 name_usage.append(pts)
-        
+            elif type_start == 0:
+                type_start = pts[0][0]
+                type.append(pts)
+                self.draw_box(img, pts, color_dict['type'])
+            elif pts[0][0] - type_start < width // 50:
+                type.append(pts)
+                self.draw_box(img, pts, color_dict['type'])
+            else:
+                quantity.append(pts)
+                self.draw_box(img, pts, color_dict['quantity'])
+              
         line_idx = 1
         count = 0
-        name = ''
+        drug_name = ''
         usage = ''
         mapping = {}
 
-        color_dict = {'name': (255, 0, 0), 'usage': (0, 255, 0), 'diagnosis': (0, 0, 255)}
+        name_usage = sorted(name_usage, key=lambda c: c[0][1], reverse=True)
+
+        # print(name_usage, type, quantity)
+
         for i in range(len(name_usage)):
             warp = transform.four_point_transform(img, name_usage[i])
             ocr = self.predict(warp)
             if i == len(name_usage) - 1 or name_usage[i+1][0][1] < h_val[line_idx] - height//100:
-                self.draw_box(img, name_usage[i], color_dict['name'])
-                name = ocr + name
-                mapping[name] = usage
-                name = ''
+                self.draw_box(img, name_usage[i], color_dict['drug_name'])
+                drug_name = ocr + drug_name
+                mapping[drug_name] = usage
+                drug_name = ''
                 count = 0
                 line_idx += 1
             else:
@@ -180,16 +224,23 @@ class Rule():
                     count = 1
                     self.draw_box(img, name_usage[i], color_dict['usage'])
                 else:
-                    self.draw_box(img, name_usage[i], color_dict['name'])
-                    name = ocr + name
-        phong_kham = upper[0][0][0]
-        chandoan = ''     
-        for i in range (1, len(upper)):
+                    self.draw_box(img, name_usage[i], color_dict['drug_name'])
+                    drug_name = ocr + drug_name
+        phong_kham = upper[0]
+        if upper[1][0][1] - phong_kham[0][1] < height // 100:
+            begin = 2
+        else:
+            begin = 1
+        diagnose = ''     
+        for i in range (begin, len(upper)):
+            
             warp = transform.four_point_transform(img, upper[i])
             ocr = self.predict(warp)
             self.draw_box(img, upper[i], color_dict['diagnosis'])
-            chandoan = ocr + ' ' + chandoan
-            if upper[i][0][0] - phong_kham < width//70:
+            diagnose = ocr + ' ' + diagnose
+            if upper[i][0][0] - phong_kham[0][0] < width//70:
                 break
-        return mapping, chandoan, img
+
+        
+        return mapping, diagnose, img
 
