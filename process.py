@@ -3,6 +3,7 @@ from pylsd import lsd
 import numpy as np
 from scipy.spatial import distance as dist
 from PIL import Image
+import csv
 
 from pyimagesearch import imutils, transform
 
@@ -11,6 +12,7 @@ class Rule():
         super().__init__()
         self.detector = detector
         self.classifier = classifier
+        self.color_dict = {'drug_name': (255, 0, 0), 'usage': (0, 255, 0), 'diagnose': (0, 0, 255), 'type': (255,255,0), 'quantity': (0,255,255), 'date': (255,0,255)}
     
     def rotate(self, img):
         '''Rotate the image'''
@@ -130,15 +132,17 @@ class Rule():
         for i in range(4):
             cv2.line(img, tuple(pts[i-1]), tuple(pts[i]), color, thickness=3)
         return
-    def box_val(self, pts):
-        x_min = np.min(pts, axis=0)
-        x_max = np.max(pts, axis=0)
-        y_min = np.min(pts, axis=1)
-        y_max = np.max(pts, axis=1)
-        return x_min, y_min, x_max, y_max
 
-    def case1(self, img):
-        color_dict = {'drug_name': (255, 0, 0), 'usage': (0, 255, 0), 'diagnosis': (0, 0, 255), 'type': (255,255,0), 'quantity': (0,255,255), 'date': (255,0,255)}
+    def row(self, img, pts, label):
+        x_min = min(pts[:, 0])
+        x_max = max(pts[:, 0])
+        y_min = min(pts[:, 1])
+        y_max = max(pts[:, 1])
+        warp = transform.four_point_transform(img, pts)
+        ocr = self.predict(warp)
+        return (int(x_min), int(y_min), int(x_max), int(y_max), ocr, label)
+
+    def case1(self, img, csv_writer):
         img = self.rotate(img)
         height, width = img.shape[:2]
         h_val = self.check_line(img)
@@ -146,11 +150,11 @@ class Rule():
         h_max = h_val[0] - width//100
 
         upper = []
-        lower = []
         inside_table = []
         dt_boxes, _ = self.detector(img)
         i = 0
         date_done = 0
+
         for pts in dt_boxes:
             pts = pts.astype(np.int16)
             dist = np.linalg.norm(pts[0] - pts[2])
@@ -161,13 +165,26 @@ class Rule():
                 inside_table.append(pts)
             elif pts[0,1] < h_val[-1] - height//100:
                 upper.append(pts)
-            elif pts[0,1] > h_max:
-                lower.append(pts)
             if date_done == 0:
                 i += 1
+        del dt_boxes
+        if date_done == 1:
+            self.draw_box(img, date_box, self.color_dict['date'])
+            csv_writer.writerow(self.row(img, date_box, 'date'))
         
-        self.draw_box(img, date_box, color_dict['date'])
+        phong_kham = upper[0]
+        if abs(upper[1][0][1] - phong_kham[0][1]) < height // 100:
+            begin = 2
+        else:
+            begin = 1   
+        for i in range (begin, len(upper)):
+            csv_writer.writerow(self.row(img, upper[i], 'diagnose'))
+            self.draw_box(img, upper[i], self.color_dict['diagnose'])
+            if upper[i][0][0] - phong_kham[0][0] < width//70:
+                break
         
+        del upper
+
         name_usage = []
         type = []
         quantity = []
@@ -190,57 +207,36 @@ class Rule():
             elif type_start == 0:
                 type_start = pts[0][0]
                 type.append(pts)
-                self.draw_box(img, pts, color_dict['type'])
+                self.draw_box(img, pts, self.color_dict['type'])
             elif pts[0][0] - type_start < width // 50:
                 type.append(pts)
-                self.draw_box(img, pts, color_dict['type'])
+                self.draw_box(img, pts, self.color_dict['type'])
             else:
                 quantity.append(pts)
-                self.draw_box(img, pts, color_dict['quantity'])
-              
+                self.draw_box(img, pts, self.color_dict['quantity'])
+        
+        type = sorted(type, key=lambda c: c[0][1], reverse=True)
+        quantity = sorted(quantity, key=lambda c: c[0][1])
+
         line_idx = 1
         count = 0
-        drug_name = ''
-        usage = ''
-        mapping = {}
 
         name_usage = sorted(name_usage, key=lambda c: c[0][1], reverse=True)
 
-        # print(name_usage, type, quantity)
-
         for i in range(len(name_usage)):
-            warp = transform.four_point_transform(img, name_usage[i])
-            ocr = self.predict(warp)
             if i == len(name_usage) - 1 or name_usage[i+1][0][1] < h_val[line_idx] - height//100:
-                self.draw_box(img, name_usage[i], color_dict['drug_name'])
-                drug_name = ocr + drug_name
-                mapping[drug_name] = usage
-                drug_name = ''
+                self.draw_box(img, name_usage[i], self.color_dict['drug_name'])
+                csv_writer.writerow(self.row(img, name_usage[i], 'drug_name'))
                 count = 0
                 line_idx += 1
             else:
                 if count == 0:
-                    usage = ocr
+                    csv_writer.writerow(self.row(img, name_usage[i], 'usage'))
                     count = 1
-                    self.draw_box(img, name_usage[i], color_dict['usage'])
+                    self.draw_box(img, name_usage[i], self.color_dict['usage'])
                 else:
-                    self.draw_box(img, name_usage[i], color_dict['drug_name'])
-                    drug_name = ocr + drug_name
-        phong_kham = upper[0]
-        if upper[1][0][1] - phong_kham[0][1] < height // 100:
-            begin = 2
-        else:
-            begin = 1
-        diagnose = ''     
-        for i in range (begin, len(upper)):
-            
-            warp = transform.four_point_transform(img, upper[i])
-            ocr = self.predict(warp)
-            self.draw_box(img, upper[i], color_dict['diagnosis'])
-            diagnose = ocr + ' ' + diagnose
-            if upper[i][0][0] - phong_kham[0][0] < width//70:
-                break
-
+                    self.draw_box(img, name_usage[i], self.color_dict['drug_name'])
+                    csv_writer.writerow(self.row(img, name_usage[i], 'drug_name'))
         
-        return mapping, diagnose, img
+        return img
 

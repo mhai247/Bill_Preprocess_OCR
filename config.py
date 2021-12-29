@@ -25,9 +25,9 @@ def in_img_dir(dataset):
     dir = os.path.join(DATA_ROOT, dataset)
     return dir
 
-def out_rule_txt_dir(dataset):
-    out_rule_txt_dir = output_dir(dataset, 'rule', type='txt')
-    return out_rule_txt_dir
+def out_rule_csv_dir(dataset):
+    out_rule_csv_dir = output_dir(dataset, 'rule', type='csv')
+    return out_rule_csv_dir
 
 def out_rule_img_dir(dataset):
     out_rule_img_dir = output_dir(dataset, 'rule', type='img')
