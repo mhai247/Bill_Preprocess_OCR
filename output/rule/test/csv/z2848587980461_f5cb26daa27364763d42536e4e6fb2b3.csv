@@ -1,0 +1,16 @@
+620,680,876,711,Ngày 14 tháng 10 năm 2021,date
+188,352,224,372,áp /,diagnose
+86,324,870,351,Chấn đoán: El1 - Bệnh đái tháo đường không phụ thuộc insuline /110 - Bệnh lý tăng huyết,diagnose
+137,584,212,611,20h30h,usage
+829,569,862,593,06,quantity
+699,566,780,592,Bút tiêm,type
+140,563,502,591,insulin hòa tan và 70% insulin isophane),drug_name
+142,536,685,568,Mixtard 30 FlexPen - 3001U/3ml (Insulin người IDNA (30%),drug_name
+144,515,359,541,Uống sáng l viên lúc 8h,usage
+829,509,859,532,60,quantity
+715,508,765,532,Viên,type
+146,492,449,517,Ibartain MRA 150mg (Irbesartan),drug_name
+146,469,436,496,Ngày uống 02 viên trước ăn sáng,usage
+822,461,866,487,120,quantity
+713,458,764,487,Viên,type
+149,445,451,471,Diamicron MR 30mg (Gliclazide),drug_name

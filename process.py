@@ -63,6 +63,8 @@ class Rule():
             return None
 
         rotated = imutils.rotate(img, angle)
+        del contours
+        del lines
         return rotated
     
     def check_line(self, img):
@@ -93,6 +95,7 @@ class Rule():
                     continue
                 chosen.append(line)
             lines  = sorted(chosen, key=lambda c: c[1], reverse=True)
+        del chosen
         num = 0
         h_val = []
         start = lines[0]
@@ -120,6 +123,7 @@ class Rule():
         start = lines[i]
         x_min = min(start[0], start[2])
         x_max = max(start[0], start[2])
+        del lines
         return h_val
 
     def predict(self, img):
@@ -146,6 +150,8 @@ class Rule():
         img = self.rotate(img)
         height, width = img.shape[:2]
         h_val = self.check_line(img)
+        if len(h_val) < 2:
+            return img
         h_min = h_val[-2]- width//50
         h_max = h_val[0] - width//100
 
@@ -214,6 +220,8 @@ class Rule():
             else:
                 quantity.append(pts)
                 self.draw_box(img, pts, self.color_dict['quantity'])
+
+        del inside_table
         
         type = sorted(type, key=lambda c: c[0][1], reverse=True)
         quantity = sorted(quantity, key=lambda c: c[0][1])
@@ -222,6 +230,11 @@ class Rule():
         count = 0
 
         name_usage = sorted(name_usage, key=lambda c: c[0][1], reverse=True)
+        quantity = sorted(quantity, key=lambda c: c[0][1], reverse=True)
+        type = sorted(type, key=lambda c: c[0][1], reverse=True)
+
+        quan_idx = 0
+        type_idx = 0
 
         for i in range(len(name_usage)):
             if i == len(name_usage) - 1 or name_usage[i+1][0][1] < h_val[line_idx] - height//100:
@@ -234,9 +247,19 @@ class Rule():
                     csv_writer.writerow(self.row(img, name_usage[i], 'usage'))
                     count = 1
                     self.draw_box(img, name_usage[i], self.color_dict['usage'])
+                    if quan_idx < len(quantity) and quantity[quan_idx][0][1] > h_val[line_idx] - height//100:
+                        csv_writer.writerow(self.row(img, quantity[quan_idx], 'quantity'))
+                        quan_idx += 1
+                    if type_idx < len(type) and type[type_idx][0][1] > h_val[line_idx] - height//100:
+                        csv_writer.writerow(self.row(img, type[type_idx], 'type'))
+                        type_idx += 1
                 else:
                     self.draw_box(img, name_usage[i], self.color_dict['drug_name'])
                     csv_writer.writerow(self.row(img, name_usage[i], 'drug_name'))
+        del name_usage
+        del type
+        del quantity
+        del h_val
         
         return img
 
