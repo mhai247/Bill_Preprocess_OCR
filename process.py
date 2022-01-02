@@ -87,43 +87,53 @@ class Rule():
 
         if lines is not None:
             lines = lines.squeeze().astype(np.int16).tolist()
+            horizontal_lines_canvas = np.zeros(edged.shape, dtype=np.uint8)
 
             chosen = []
             for line in lines:
                 x1, y1, x2, y2, _ = line
-                if abs(x2 - x1) < 45 or y1 < height//4 or y1 > height*3//4:
+                
+                if abs(x2 - x1) < width/40 or y1 < height//4 or y1 > height*4//5:
                     continue
+                
+                tan = abs(y1-y2)/abs(x1-x2)
+                if tan > 0.03:
+                    continue
+                cv2.line(horizontal_lines_canvas, (x1, y1), (x2, y2), 255, 2)
                 chosen.append(line)
+                
             lines  = sorted(chosen, key=lambda c: c[1], reverse=True)
+            
         del chosen
+        
         num = 0
         h_val = []
         start = lines[0]
         count = 0
         x_min = min(start[0], start[2])
         x_max = max(start[0], start[2])
-        for i in range(len(lines) - 1):
+        for i in range(1,len(lines)):
             x1, y1, x2, y2, _ = lines[i]
             if start[1] - y1 <= width/80:
                 count += 1
                 x_min = min(x_min, x1, x2)
                 x_max = max(x_max, x1, x2)
             else:
-                if x_max - x_min > width/4:
+                if x_max - x_min > width//3:
                     num += 1
                     h_val.append(start[1])
                 count = 0
                 start = lines[i]
                 x_min = min(start[0], start[2])
                 x_max = max(start[0], start[2])
-        if x_max - x_min > width/2:
+        if x_max - x_min > width//3:
             num += 1
             h_val.append(start[1])
-        count = 0
-        start = lines[i]
-        x_min = min(start[0], start[2])
-        x_max = max(start[0], start[2])
         del lines
+        # for val in h_val:
+        #     cv2.line(horizontal_lines_canvas, (0, val), (500, val), 255, 2)
+        # print(h_val)
+        cv2.imwrite('line.jpg', horizontal_lines_canvas)
         return h_val
 
     def predict(self, img):
@@ -164,6 +174,9 @@ class Rule():
         for pts in dt_boxes:
             pts = pts.astype(np.int16)
             dist = np.linalg.norm(pts[0] - pts[2])
+            if pts[0][0] < 30 and dist < width//13:
+                continue
+            
             if dist > width//30 and pts[0,1] > h_min and pts[0,1] < h_max:
                 if date_done == 0:
                     date_box = dt_boxes[i-3]
@@ -171,6 +184,7 @@ class Rule():
                 inside_table.append(pts)
             elif pts[0,1] < h_val[-1] - height//100:
                 upper.append(pts)
+                # self.draw_box(img, pts, (122,122,122))
             if date_done == 0:
                 i += 1
         del dt_boxes
@@ -179,14 +193,18 @@ class Rule():
             csv_writer.writerow(self.row(img, date_box, 'date'))
         
         phong_kham = upper[0]
-        if abs(upper[1][0][1] - phong_kham[0][1]) < height // 100:
+        if abs(upper[1][0][1] - phong_kham[0][1]) < height // 120:
             begin = 2
+            x_val = min(phong_kham[0][0], upper[1][0][0])
         else:
-            begin = 1   
+            begin = 1
+            x_val = phong_kham[0][0]
         for i in range (begin, len(upper)):
+            if x_val - upper[i][0][0] > width // 70:
+                continue
             csv_writer.writerow(self.row(img, upper[i], 'diagnose'))
             self.draw_box(img, upper[i], self.color_dict['diagnose'])
-            if upper[i][0][0] - phong_kham[0][0] < width//70:
+            if upper[i][0][0] - x_val < width//70:
                 break
         
         del upper
@@ -214,7 +232,7 @@ class Rule():
                 type_start = pts[0][0]
                 type.append(pts)
                 self.draw_box(img, pts, self.color_dict['type'])
-            elif pts[0][0] - type_start < width // 50:
+            elif pts[0][0] - type_start < width // 30:
                 type.append(pts)
                 self.draw_box(img, pts, self.color_dict['type'])
             else:

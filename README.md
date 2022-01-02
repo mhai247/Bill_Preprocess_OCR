@@ -1,12 +1,12 @@
 # Text Image Scan
 ## Introduciton
-This repo is to scan and align a text image file using text detection.
+This repo is to scan and extract info from bill images.
 Like this
-![Result](result.jpg "Result")
+![Result](result.png "Result")
 ## Pipeline
 1. Image rotation using OpenCV
 1. Text detection using Paddle OCR
-1. Maping detected box in a new image using pyimagesearch
+1. Use rule to extract key info
 1. OCR
 ## Use
 
@@ -25,14 +25,14 @@ pip install -r requirement.txt
 Test the avaiable dataset
 
 ```
-python3 scan.py
+python3 main.py --dataset test --use_gpu True --visualise True
 ```
 
 Copy your dataset into data folder
 Run in your dataset
 
 ```
-python3 scan.py --image_dir YOUR_DATASET_NAME
+python3 scan.py --dataset YOUR_DATASET_NAME
 ```
 
 ## Opensource code

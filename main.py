@@ -1,4 +1,3 @@
-from typing import Mapping
 from utils import parse_args
 from detect import TextDetector
 from vietocr.tool.predictor import Predictor
@@ -16,7 +15,10 @@ if __name__ == '__main__':
     args = parse_args()
     detector = TextDetector(args)
     config = Cfg.load_config_from_name('vgg_seq2seq')
-    config['device'] = 'cpu'
+    if args.use_gpu == True:
+        config['device'] = 'cuda'
+    else:
+        config['device'] = 'cpu'
     # config['cnn']['pretrained'] = False
     # config['predictor']['beamsearch'] = False
     classifier = Predictor(config)
@@ -27,7 +29,8 @@ if __name__ == '__main__':
     out_csv_dir = out_rule_csv_dir(dataset)
     out_img_dir = out_rule_img_dir(dataset)
 
-    files = glob.glob(image_dir + '/*.jpg')
+    files = glob.glob(os.path.join(image_dir, '*.jpg'))
+    # print(files)
 
     for file in reversed(files):
         file_name = file.split('/')[-1]
