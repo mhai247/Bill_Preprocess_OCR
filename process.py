@@ -171,22 +171,21 @@ class Rule():
         i = 0
         date_done = 0
 
-        for pts in dt_boxes:
+        for i in range(len(dt_boxes)):
+            pts = dt_boxes[i]
             pts = pts.astype(np.int16)
             dist = np.linalg.norm(pts[0] - pts[2])
-            if pts[0][0] < 30 and dist < width//13:
+            if pts[0][0] < width//50 and dist < width//13:
                 continue
             
             if dist > width//30 and pts[0,1] > h_min and pts[0,1] < h_max:
+                
                 if date_done == 0:
                     date_box = dt_boxes[i-3]
                     date_done = 1
                 inside_table.append(pts)
             elif pts[0,1] < h_val[-1] - height//100:
                 upper.append(pts)
-                # self.draw_box(img, pts, (122,122,122))
-            if date_done == 0:
-                i += 1
         del dt_boxes
         if date_done == 1:
             self.draw_box(img, date_box, self.color_dict['date'])
