@@ -29,7 +29,7 @@ if __name__ == '__main__':
     out_csv_dir = out_rule_csv_dir(dataset)
     out_img_dir = out_rule_img_dir(dataset)
 
-    files = glob.glob(os.path.join(image_dir, 'z2848588127519_9d91cb084c85a8b5ffad16b3f7f5b389.jpg'))
+    files = glob.glob(os.path.join(image_dir, '*.jpg'))
     # print(files)
 
     for file in reversed(files):
