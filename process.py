@@ -3,7 +3,6 @@ from pylsd import lsd
 import numpy as np
 from scipy.spatial import distance as dist
 from PIL import Image
-import csv
 
 from pyimagesearch import imutils, transform
 
@@ -76,7 +75,7 @@ class Rule():
 
         gray = cv2.cvtColor(crop, cv2.COLOR_RGB2GRAY)
 
-        thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 21, 15)
+        thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 15, 4)
         
         kernel = cv2.getStructuringElement(cv2.MORPH_CROSS,(25,1))
         erode = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
@@ -87,19 +86,19 @@ class Rule():
 
         if lines is not None:
             lines = lines.squeeze().astype(np.int16).tolist()
-            horizontal_lines_canvas = np.zeros(edged.shape, dtype=np.uint8)
+            # horizontal_lines_canvas = np.zeros(edged.shape, dtype=np.uint8)
 
             chosen = []
             for line in lines:
                 x1, y1, x2, y2, _ = line
                 
-                if abs(x2 - x1) < width/40 or y1 < height//4 or y1 > height*4//5:
+                if abs(x2 - x1) < width/20 or y1 < height//4 or y1 > height*4//5:
                     continue
                 
                 tan = abs(y1-y2)/abs(x1-x2)
                 if tan > 0.03:
                     continue
-                cv2.line(horizontal_lines_canvas, (x1, y1), (x2, y2), 255, 2)
+                # cv2.line(horizontal_lines_canvas, (x1, y1), (x2, y2), 255, 2)
                 chosen.append(line)
                 
             lines  = sorted(chosen, key=lambda c: c[1], reverse=True)
@@ -133,7 +132,7 @@ class Rule():
         # for val in h_val:
         #     cv2.line(horizontal_lines_canvas, (0, val), (500, val), 255, 2)
         # print(h_val)
-        cv2.imwrite('line.jpg', horizontal_lines_canvas)
+        # cv2.imwrite('line.jpg', horizontal_lines_canvas)
         return h_val
 
     def predict(self, img):
@@ -168,7 +167,7 @@ class Rule():
         upper = []
         inside_table = []
         dt_boxes, _ = self.detector(img)
-        i = 0
+        back = 3
         date_done = 0
 
         for i in range(len(dt_boxes)):
@@ -176,12 +175,14 @@ class Rule():
             pts = pts.astype(np.int16)
             dist = np.linalg.norm(pts[0] - pts[2])
             if pts[0][0] < width//50 and dist < width//13:
+                if pts[0][1] - h_max < height//8:
+                    back += 1
                 continue
             
             if dist > width//30 and pts[0,1] > h_min and pts[0,1] < h_max:
                 
                 if date_done == 0:
-                    date_box = dt_boxes[i-3]
+                    date_box = dt_boxes[i-back].astype(np.int16)
                     date_done = 1
                 inside_table.append(pts)
             elif pts[0,1] < h_val[-1] - height//100:
