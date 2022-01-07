@@ -162,6 +162,9 @@ class Rule():
         img = self.rotate(img)
         height, width = img.shape[:2]
         h_val = self.check_line(img)
+        # for val in h_val:
+        #     cv2.line(img, (0, val), (500, val), (255, 255, 0), 2)
+
         if len(h_val) < 2:
             return img
         if h_val[-2] - h_val[-1] > height // 20:
@@ -201,13 +204,15 @@ class Rule():
                     date_box = dt_boxes[i-back].astype(np.int16)
                     date_done = 1
                 inside_table.append(pts)
-            elif pts[0,1] < h_val[-1] - height//100:
+            elif pts[0,1] < h_val[-1] - height//80:
                 upper.append(pts)
         del dt_boxes
         if date_done == 1:
             self.draw_box(img, date_box, self.color_dict['date'])
             csv_writer.writerow(self.row(img, date_box, 'date'))
-        
+        # for pts in upper:
+        #     self.draw_box(img, pts, (122, 122, 0))
+
         phong_kham = upper[0]
         if abs(upper[1][0][1] - phong_kham[0][1]) < height // 120:
             begin = 2
@@ -216,11 +221,11 @@ class Rule():
             begin = 1
             x_val = phong_kham[0][0]
         for i in range (begin, len(upper)):
-            if x_val - upper[i][0][0] > width // 70:
+            if x_val - upper[i][0][0] > width // 60:
                 continue
             csv_writer.writerow(self.row(img, upper[i], 'diagnose'))
             self.draw_box(img, upper[i], self.color_dict['diagnose'])
-            if upper[i][0][0] - x_val < width//70:
+            if upper[i][0][0] - x_val < width//50:
                 break
         
         del upper
@@ -240,9 +245,9 @@ class Rule():
 
 
         for pts in inside_table:
-            if inside_table[max_width][0][0] - pts[0][0] > width//50:
+            if inside_table[max_width][0][0] - pts[0][0] > width//30:
                 continue
-            if abs(inside_table[max_width][0][0] - pts[0][0]) < width//50:
+            if abs(inside_table[max_width][0][0] - pts[0][0]) < width//20:
                 name_usage.append(pts)
             elif type_start == 0:
                 type_start = pts[0][0]
