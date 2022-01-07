@@ -92,7 +92,7 @@ class Rule():
             for line in lines:
                 x1, y1, x2, y2, _ = line
                 
-                if abs(x2 - x1) < width/20 or y1 < height//4 or y1 > height*4//5:
+                if abs(x2 - x1) < width/20 or y1 < height//5 or y1 > height*4//5:
                     continue
                 
                 tan = abs(y1-y2)/abs(x1-x2)
@@ -113,19 +113,19 @@ class Rule():
         x_max = max(start[0], start[2])
         for i in range(1,len(lines)):
             x1, y1, x2, y2, _ = lines[i]
-            if start[1] - y1 <= width/80:
+            if start[1] - y1 <= width/60:
                 count += 1
                 x_min = min(x_min, x1, x2)
                 x_max = max(x_max, x1, x2)
             else:
-                if x_max - x_min > width//3:
+                if x_max - x_min > width//4:
                     num += 1
                     h_val.append(start[1])
                 count = 0
                 start = lines[i]
                 x_min = min(start[0], start[2])
                 x_max = max(start[0], start[2])
-        if x_max - x_min > width//3:
+        if x_max - x_min > width//4:
             num += 1
             h_val.append(start[1])
         del lines
@@ -142,8 +142,11 @@ class Rule():
         return s
 
     def draw_box(self, img, pts, color):
+        if color[0] == 122:
+            thickness = 15
+        else: thickness = 3
         for i in range(4):
-            cv2.line(img, tuple(pts[i-1]), tuple(pts[i]), color, thickness=3)
+            cv2.line(img, tuple(pts[i-1]), tuple(pts[i]), color, thickness=thickness)
         return
 
     def row(self, img, pts, label):
@@ -161,9 +164,12 @@ class Rule():
         h_val = self.check_line(img)
         if len(h_val) < 2:
             return img
+        if h_val[-2] - h_val[-1] > height // 20:
+            h_val.remove(h_val[-1])
         h_min = h_val[-2]- width//50
         h_max = h_val[0] - width//100
-
+        # for val in h_val:
+        #     cv2.line
         upper = []
         inside_table = []
         dt_boxes, _ = self.detector(img)
@@ -174,14 +180,24 @@ class Rule():
             pts = dt_boxes[i]
             pts = pts.astype(np.int16)
             dist = np.linalg.norm(pts[0] - pts[2])
-            if pts[0][0] < width//50 and dist < width//13:
-                if pts[0][1] - h_max < height//8:
+
+            if dist < width//13 and pts[0][0] < width//70:
+                if pts[0][1] - h_max < height//15:
+                    # self.draw_box(img, pts, (122,122))
+                    # print(pts, 'a')
                     back += 1
                 continue
             
+            if dist < width//20 and pts[0][1] < h_max + height//25 and pts[0][1] > h_max:
+                # self.draw_box(img, pts, (122,122,122))
+                # print(pts, 'b')
+                back += 1
+                continue
+            
             if dist > width//30 and pts[0,1] > h_min and pts[0,1] < h_max:
-                
                 if date_done == 0:
+                    # for j in range (back):
+                    # print(back)
                     date_box = dt_boxes[i-back].astype(np.int16)
                     date_done = 1
                 inside_table.append(pts)

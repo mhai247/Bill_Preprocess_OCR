@@ -11,7 +11,7 @@ import csv
 from process import Rule
 from config import in_img_dir, out_rule_csv_dir, out_rule_img_dir
 
-if __name__ == '__main__':
+def main():
     args = parse_args()
     detector = TextDetector(args)
     config = Cfg.load_config_from_name('vgg_seq2seq')
@@ -54,5 +54,6 @@ if __name__ == '__main__':
             print('Visualised image saved in: ' + out_img_file)
         print('Time: {}\n'.format(end - start))
         # break
-
+if __name__ == '__main__':
+    main()
 
