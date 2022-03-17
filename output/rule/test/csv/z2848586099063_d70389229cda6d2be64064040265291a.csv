@@ -1,34 +1,69 @@
-1274,1800,1765,1845,Ngày 15 tháng 10 năm 2021,date
-415,765,635,803,ngực ổn định,diagnose
-409,714,1686,774,ngực;150 - Suy tim;K21 - Bệnh trào ngược dạ dày - tơự đau thắt,diagnose
-409,661,1740,734,"và tình trạng tăng lipid máu khác; 110 - Bệnh lý tăng huyết áp,120 - Cơn đau thắt",diagnose
-196,602,1754,696,Chấn đoán: 125.5 - Bệnh cơ tim do thiếu máu cục bộ/E 88-- rối loạn chuyển hóa lipoprotein,diagnose
-315,1607,424,1660,lv sh,usage
-1677,1589,1732,1637,60,quantity
-1450,1583,1548,1641,Viên,type
-322,1565,974,1611,Vaspycar MR 33mg (Trimetazidin),drug_name
-325,1515,458,1560,lv20h,usage
-1672,1496,1726,1541,30,quantity
-1451,1491,1544,1539,Viên,type
-322,1464,974,1515,TV.Fenofibrat-200mg (Fenofibrat),drug_name
-327,1421,458,1459,1/2 v8h,usage
-1666,1373,1721,1421,30,quantity
-1448,1373,1541,1421,Viên,type
-322,1370,578,1419,spironolacton),drug_name
-322,1320,1154,1368,Savispirono-Plus-20mg 5 50mg (Furosemid +,drug_name
-327,1274,478,1318,1V20H,usage
-1661,1256,1715,1304,60,quantity
-1445,1253,1538,1301,Viên,type
-321,1218,791,1283,Rabepagi 10 (Rabeprazol),drug_name
-330,1179,445,1224,1v8h,usage
-1658,1163,1713,1211,60,quantity
-1445,1160,1535,1208,Viên,type
-330,1128,840,1179,Periwel 4-4mg (Perindopril),drug_name
-338,1088,464,1125,lv20h,usage
-1655,1072,1710,1117,60,quantity
-1436,1063,1534,1118,Viên,type
-332,1037,1007,1091,Fasthan 20mg (Pravastatin natri 20mg),drug_name
-335,1000,682,1040,1gói sau ăn no sáng,usage
-1653,981,1710,1027,60,quantity
-1451,981,1525,1021,Gói,type
-333,946,867,998,Aspirin 100 - 100mg (Aspirin),drug_name
+166,52,865,133,BỆNH VIỆN ĐA KHOA TÍNH THANH HÓA,other
+262,122,773,210,SOY TẾ THANH THI THI THI THOT THOT THOT THOT THOT THOT THOT THOT THO,other
+1276,180,1616,220,Mã BN:2101001873,other
+188,189,806,299,BỆNH VIDN KHONG THỊ NHƯNG VIỆN KHONG KHONG VIỆN KHONG KHONG KHONG KHONG KHONG KHONG KHONG KHONG KHONG KH,other
+1275,228,1531,272,Số: 211002084,other
+832,280,1180,316,Mã hồ sơ: 2110150623,other
+1274,280,1673,340,Kho:110-Kho Ngoại trú,other
+672,344,1332,408,ĐƠN THUỐC BẢO HIỂM,other
+1499,362,1760,414,KKB.43406,other
+206,388,613,454,Họ tên: lê thị bình,other
+1316,424,1476,468,Tuổi: 70,other
+200,442,399,507,Đối tượng:,other
+450,454,729,511,Bảo Hiểm Y Tế,other
+1315,477,1680,524,SĐT: 03658 258 580,other
+202,497,793,569,Số thẻ BHYT: BT2383823209870,other
+1103,528,1536,574,Nơi ĐK KCB BĐ: 38627,other
+202,555,1464,640,"Địa chỉ: Thôn 5, Quảng Bình, Quảng Xương, Tỉnh Thanh Hóa, Việt Nam",other
+203,606,1748,691,Chấn đoản: 125.5 - Bệnh cơ tim do thiếu máu cục bộ /E78 - Rối loạn chuyển hóa lipoprotein,diagnose
+411,671,1740,730,và tình trạng tăng lipid máu khác;110 - Bệnh lý tăng huyết áp;120 - Cơn đau thắt,diagnose
+411,714,1688,776,ngực; 150 - Suy tim;K21 - Bệnh trào ngược dạ dày - tơự đau thắt,diagnose
+407,757,640,809,ngực ổn định,diagnose
+198,795,632,857,Phòng: Phòng khám 219,other
+220,884,304,924,STT,other
+658,878,1073,940,Tên thuốc - Cách dùng,other
+1597,893,1762,949,Số lượng,other
+1436,900,1528,936,ĐVT,other
+335,947,868,998,Aspirin 100 - 100mg (Aspirin),drug_name
+1452,984,1520,1020,Gói,type
+1656,984,1708,1024,60,quantity
+335,995,684,1044,1 gói sau ăn no sáng,usage
+331,1037,1008,1092,Fasthan 20mg (Pravastatin natri 20mg),drug_name
+252,1064,272,1100,2,other
+1444,1072,1528,1112,Viên,type
+1656,1072,1708,1116,60,quantity
+336,1088,464,1128,1v20h,usage
+332,1132,844,1180,Periwel 4 - 4mg (Perindopril),drug_name
+248,1160,268,1192,3,other
+1448,1164,1532,1204,Viên,type
+1660,1164,1712,1208,60,quantity
+332,1180,440,1220,lv8h,usage
+328,1228,792,1276,Rabepagi 10 (Rabeprazol),drug_name
+1448,1256,1532,1296,Viên,type
+1660,1256,1716,1300,60,quantity
+328,1276,480,1316,1V20H,usage
+327,1319,1152,1374,Savispirono-Plus - 20mg 5 50mg (Furosemid +,drug_name
+324,1372,580,1416,spironolacton),drug_name
+1452,1376,1536,1416,Viên,type
+1668,1376,1720,1420,30,quantity
+328,1420,460,1460,1/2 v8h,usage
+324,1468,976,1516,TV.Fenofibrat-200mg (Fenofibrat),drug_name
+1456,1496,1540,1536,Viên,type
+1672,1496,1724,1540,30,quantity
+324,1516,456,1556,lv20h,usage
+324,1564,976,1612,Vaspycar MR - 35mg (Trimetazidin),drug_name
+1456,1588,1544,1632,Viên,type
+1676,1592,1732,1636,60,quantity
+1276,1800,1768,1848,Ngày 15 tháng 10 năm 2021,date
+322,1613,425,1657,lv hh,usage
+171,1668,520,1726,Cộng khoản: 7 loại,other
+172,1724,1104,1784,Lưu ý: Khám lại khi thấy bất thường và khi hết thuốc,other
+1276,1800,1768,1848,Ngày 15 tháng 10 năm 2021,other
+266,1840,424,1896,Kế toán,other
+600,1848,760,1892,Thủ kho,other
+944,1852,1160,1900,Người bệnh,other
+1407,1852,1639,1896,Bác sĩ khám,other
+868,1912,1240,1960,"(Ký và ghi rõ họ, tên)",other
+1336,1912,1716,1960,"(Ký và ghi rõ họ, tên)",other
+869,2002,1282,2135,Lutur Bull,other
+1423,2211,1631,2251,Lê Thị Xuân,other
